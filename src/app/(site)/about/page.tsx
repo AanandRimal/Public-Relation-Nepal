@@ -2,7 +2,7 @@ import { getAbout, getTeam, getClients, getAwards, getSettings } from "@/lib/cms
 import { buildMetadata, breadcrumbSchema, jsonLd, SITE_URL } from "@/lib/seo/metadata";
 import { SectionHeader } from "@/components/shared/section-header";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/motion/fade-in";
-import { Breadcrumbs, CTABanner } from "@/components/shared/cms-image";
+import { Breadcrumbs, CTABanner, CmsImage } from "@/components/shared/cms-image";
 import { ClientsSection, AwardsSection } from "@/components/sections/home-sections";
 import Link from "next/link";
 
@@ -24,6 +24,7 @@ export default async function AboutPage() {
 
   const leadership = team.filter((m) => m.department === "leadership" || m.department === "executive");
   const creative = team.filter((m) => m.department === "creative");
+  const operations = team.filter((m) => m.department === "operations");
 
   return (
     <>
@@ -117,9 +118,15 @@ export default async function AboutPage() {
             {leadership.map((member) => (
               <StaggerItem key={member.id}>
                 <div className="p-6 rounded-xl border border-slate-100 text-center">
-                  <div className="h-24 w-24 rounded-full bg-gradient-brand mx-auto mb-4 flex items-center justify-center text-white font-display font-bold text-xl">
-                    {member.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
-                  </div>
+                  {member.image ? (
+                    <div className="relative h-24 w-24 rounded-full mx-auto mb-4 overflow-hidden">
+                      <CmsImage image={member.image} fill sizes="96px" />
+                    </div>
+                  ) : (
+                    <div className="h-24 w-24 rounded-full bg-gradient-brand mx-auto mb-4 flex items-center justify-center text-white font-display font-bold text-xl">
+                      {member.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+                    </div>
+                  )}
                   <h3 className="font-display font-bold text-slate-900">{member.name}</h3>
                   <p className="text-sm text-green-600 font-medium mt-1">{member.role}</p>
                   {member.bio && <p className="mt-3 text-sm text-slate-500">{member.bio}</p>}
@@ -139,6 +146,11 @@ export default async function AboutPage() {
             {creative.map((member) => (
               <StaggerItem key={member.id}>
                 <div className="p-6 rounded-xl bg-white border border-slate-100">
+                  {member.image && (
+                    <div className="relative h-16 w-16 rounded-full mb-4 overflow-hidden">
+                      <CmsImage image={member.image} fill sizes="64px" />
+                    </div>
+                  )}
                   <h3 className="font-display font-bold text-slate-900">{member.name}</h3>
                   <p className="text-sm text-blue-800 font-medium mt-1">{member.role}</p>
                   {member.bio && <p className="mt-3 text-sm text-slate-500">{member.bio}</p>}
@@ -148,6 +160,32 @@ export default async function AboutPage() {
           </StaggerContainer>
         </div>
       </section>
+
+      {operations.length > 0 && (
+        <section className="section-padding bg-white">
+          <div className="container-wide">
+            <FadeIn>
+              <SectionHeader eyebrow="Operations" title="Operations Team" />
+            </FadeIn>
+            <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {operations.map((member) => (
+                <StaggerItem key={member.id}>
+                  <div className="p-6 rounded-xl bg-slate-50 border border-slate-100">
+                    {member.image && (
+                      <div className="relative h-16 w-16 rounded-full mb-4 overflow-hidden">
+                        <CmsImage image={member.image} fill sizes="64px" />
+                      </div>
+                    )}
+                    <h3 className="font-display font-bold text-slate-900">{member.name}</h3>
+                    <p className="text-sm text-blue-800 font-medium mt-1">{member.role}</p>
+                    {member.bio && <p className="mt-3 text-sm text-slate-500">{member.bio}</p>}
+                  </div>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </div>
+        </section>
+      )}
 
       <section className="section-padding bg-white">
         <div className="container-wide max-w-3xl mx-auto">
