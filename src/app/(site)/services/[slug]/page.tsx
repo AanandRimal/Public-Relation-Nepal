@@ -20,7 +20,7 @@ import { SectionHeader } from "@/components/shared/section-header";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/motion/fade-in";
 import { FAQSection } from "@/components/sections/faq-section";
 import { PortfolioGrid } from "@/components/sections/portfolio-grid";
-import { CTABanner } from "@/components/shared/cms-image";
+import { CTABanner, CmsImage } from "@/components/shared/cms-image";
 import { ArrowRight } from "lucide-react";
 
 export const revalidate = 3600;
@@ -95,6 +95,13 @@ export default async function ServiceDetailPage({
           { label: service.title },
         ]}
       />
+
+      {service.heroImage && (
+        <section className="relative aspect-[21/9] max-h-[500px] overflow-hidden bg-charcoal">
+          <CmsImage image={service.heroImage} fill priority sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 to-transparent" />
+        </section>
+      )}
 
       <section className="section-padding bg-white">
         <div className="container-wide">
