@@ -8,42 +8,95 @@ import { portfolioCategories } from "@/data/portfolio";
 import { CmsImage } from "@/components/shared/cms-image";
 import { Suspense } from "react";
 
-function PortfolioFilter({ projects }: { projects: PortfolioProject[] }) {
-  const searchParams = useSearchParams();
-  const activeCategory = searchParams.get("category");
+function buildFilterHref(current: URLSearchParams, key: string, value: string | null) {
+  const next = new URLSearchParams(current);
+  if (value) next.set(key, value);
+  else next.delete(key);
+  const qs = next.toString();
+  return qs ? `/portfolio?${qs}` : "/portfolio";
+}
 
-  const filtered = activeCategory
-    ? projects.filter((p) => p.category === activeCategory)
-    : projects;
+function FilterRow({
+  label,
+  options,
+  activeValue,
+  paramKey,
+  searchParams,
+}: {
+  label: string;
+  options: readonly { slug: string; label: string }[];
+  activeValue: string | null;
+  paramKey: string;
+  searchParams: URLSearchParams;
+}) {
+  if (options.length === 0) return null;
 
   return (
-    <>
-      <div className="flex flex-wrap gap-2 mb-10">
+    <div className="mb-4">
+      <span className="mr-2 text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</span>
+      <div className="mt-2 flex flex-wrap gap-2">
         <Link
-          href="/portfolio"
+          href={buildFilterHref(searchParams, paramKey, null)}
           className={cn(
             "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-            !activeCategory
+            !activeValue
               ? "bg-blue-800 text-white"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
           )}
         >
           All
         </Link>
-        {portfolioCategories.map((cat) => (
+        {options.map((opt) => (
           <Link
-            key={cat.slug}
-            href={`/portfolio?category=${cat.slug}`}
+            key={opt.slug}
+            href={buildFilterHref(searchParams, paramKey, opt.slug)}
             className={cn(
               "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-              activeCategory === cat.slug
+              activeValue === opt.slug
                 ? "bg-blue-800 text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             )}
           >
-            {cat.label}
+            {opt.label}
           </Link>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function PortfolioFilter({ projects }: { projects: PortfolioProject[] }) {
+  const searchParams = useSearchParams();
+  const activeCategory = searchParams.get("category");
+  const activeIndustry = searchParams.get("industry");
+
+  const industryOptions = [...new Set(projects.map((p) => p.industry))]
+    .sort()
+    .map((industry) => ({ slug: industry, label: industry }));
+
+  const filtered = projects.filter(
+    (p) =>
+      (!activeCategory || p.category === activeCategory) &&
+      (!activeIndustry || p.industry === activeIndustry)
+  );
+
+  return (
+    <>
+      <div className="mb-10">
+        <FilterRow
+          label="Type"
+          options={portfolioCategories}
+          activeValue={activeCategory}
+          paramKey="category"
+          searchParams={searchParams}
+        />
+        <FilterRow
+          label="Industry"
+          options={industryOptions}
+          activeValue={activeIndustry}
+          paramKey="industry"
+          searchParams={searchParams}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -75,7 +128,7 @@ function PortfolioFilter({ projects }: { projects: PortfolioProject[] }) {
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-center text-slate-500 py-12">No projects found in this category.</p>
+        <p className="text-center text-slate-500 py-12">No projects match these filters.</p>
       )}
     </>
   );

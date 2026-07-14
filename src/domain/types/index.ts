@@ -116,10 +116,6 @@ export interface Service {
 }
 
 export type PortfolioCategory =
-  | "government"
-  | "corporate"
-  | "education"
-  | "ngos"
   | "documentaries"
   | "television-commercials"
   | "advertisements"

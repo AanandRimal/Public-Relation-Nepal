@@ -487,7 +487,7 @@ export const homepage: Homepage = {
 export const aboutPage: AboutPage = {
   overview: {
     title: "Crafting Narratives That Define Nations & Brands",
-    content: "Public Relation Nepal is South Asia's leading integrated communications agency. For over 15 years, we have partnered with government bodies, multinational corporations, NGOs, educational institutions, and international organizations to deliver strategic communications, premium branding, cinematic film production, and digital innovation.\n\nOur team of 50+ strategists, creatives, filmmakers, and digital experts combines local market expertise with international standards — delivering work that competes with the world's best agencies.",
+    content: "Public Relation Nepal is South Asia's leading integrated communications agency. For over 2 years, we have partnered with government bodies, multinational corporations, NGOs, educational institutions, and international organizations to deliver strategic communications, premium branding, cinematic film production, and digital innovation.\n\nOur team of 50+ strategists, creatives, filmmakers, and digital experts combines local market expertise with international standards — delivering work that competes with the world's best agencies.",
   },
   story: {
     title: "Our Story",
@@ -511,7 +511,7 @@ export const aboutPage: AboutPage = {
   ],
   csr: {
     title: "Corporate Social Responsibility",
-    content: "We believe in giving back to the communities we serve. Through pro-bono communications support for NGOs, media literacy programs, and environmental sustainability initiatives, we contribute to positive social change across Nepal and South Asia.",
+  content: "We believe in giving back to the communities we serve. Through pro-bono communications support for NGOs, media literacy programs, and environmental sustainability initiatives, we contribute to positive social change across Nepal and South Asia.",
   },
   culture: {
     title: "Our Culture",

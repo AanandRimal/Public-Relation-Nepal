@@ -164,17 +164,29 @@ export const portfolioProject = {
       name: "category",
       title: "Category",
       type: "string",
+      description: "What kind of work this is — not who the client is (see Industry below).",
       options: {
         list: [
-          "government", "corporate", "education", "ngos", "documentaries",
-          "television-commercials", "advertisements", "ai-advertisements",
+          "documentaries", "television-commercials", "advertisements", "ai-advertisements",
           "corporate-videos", "branding", "graphic-design", "digital-marketing",
           "web-development", "drone-projects",
         ],
       },
     },
     { name: "client", title: "Client", type: "string" },
-    { name: "industry", title: "Industry", type: "string" },
+    {
+      name: "industry",
+      title: "Industry",
+      type: "string",
+      description: "The client's sector — used as a filter on the portfolio page, so pick from the list rather than typing to keep values consistent.",
+      options: {
+        list: [
+          "Government", "Education", "Healthcare", "Hospitality", "Tourism",
+          "Manufacturing", "Technology", "Finance", "Banking", "Retail",
+          "Construction", "Real Estate", "NGOs",
+        ],
+      },
+    },
     { name: "featured", title: "Featured", type: "boolean" },
     imageField("heroImage", "Hero Image"),
     { name: "gallery", title: "Gallery", type: "array", of: [imageField()] },

@@ -21,14 +21,65 @@ import { mockRepository } from "./mock-repository";
 /**
  * Sanity CMS repository implementation.
  * When CMS_PROVIDER=sanity, this repository fetches from Sanity.
- * Falls back to mock data when Sanity is not configured, or when a
- * singleton document hasn't been written in Studio yet.
+ * Falls back to mock data whenever Sanity isn't configured, a document
+ * hasn't been written in Studio yet, a fetch fails, or a partially-filled
+ * document is missing a field the page needs — so the site never crashes
+ * or shows a blank page while content is still being written in Studio.
  */
 function isSanityConfigured(): boolean {
   return !!(
     process.env.NEXT_PUBLIC_SANITY_PROJECT_ID &&
     process.env.NEXT_PUBLIC_SANITY_DATASET
   );
+}
+
+/** Recursively fills any null/undefined/empty leaf in `value` with the matching leaf from `mock`. */
+function withDefaults<T>(mock: T, value: T): T {
+  if (value === null || value === undefined) return mock;
+  if (Array.isArray(mock)) {
+    return ((Array.isArray(value) && value.length ? value : mock)) as T;
+  }
+  if (typeof mock !== "object" || mock === null) {
+    return value;
+  }
+  const result: Record<string, unknown> = { ...(mock as Record<string, unknown>) };
+  for (const key of Object.keys(mock as Record<string, unknown>)) {
+    const mockValue = (mock as Record<string, unknown>)[key];
+    const rawValue = (value as Record<string, unknown>)[key];
+    result[key] = rawValue === undefined || rawValue === null ? mockValue : withDefaults(mockValue, rawValue);
+  }
+  return result as T;
+}
+
+/** For singleton documents: merges Sanity's result over mock defaults; falls back entirely on error or no document. */
+async function fetchSingleton<T>(fetchAndMap: () => Promise<T | null>, mock: () => Promise<T>): Promise<T> {
+  const mockValue = await mock();
+  try {
+    const result = await fetchAndMap();
+    return result ? withDefaults(mockValue, result) : mockValue;
+  } catch {
+    return mockValue;
+  }
+}
+
+/** For collections: falls back to mock if Sanity has no documents yet, or the fetch throws. */
+async function fetchList<T>(fetchAndMap: () => Promise<T[]>, mock: () => Promise<T[]>): Promise<T[]> {
+  try {
+    const result = await fetchAndMap();
+    return result.length ? result : await mock();
+  } catch {
+    return mock();
+  }
+}
+
+/** For single-item lookups (by slug, etc.): falls back to mock's lookup if not found in Sanity or the fetch throws. */
+async function fetchOne<T>(fetchAndMap: () => Promise<T | null>, mock: () => Promise<T | null>): Promise<T | null> {
+  try {
+    const result = await fetchAndMap();
+    return result ?? (await mock());
+  } catch {
+    return mock();
+  }
 }
 
 type RawTestimonial = Omit<Testimonial, "image"> & { image?: SanityImage };
@@ -128,165 +179,240 @@ const showcaseProjection = `{title, description, "projectIds": projects[]->_id}`
 export const sanityRepository: ContentRepository = {
   async getSettings() {
     if (!isSanityConfigured()) return mockRepository.getSettings();
-    const raw = await getSanityClient().fetch<RawSiteSettings | null>(`*[_type == "siteSettings"][0]{
-      siteName, tagline, description, logo, logoLight, favicon,
-      contact, social, navigation, footerNavigation, cta, seo
-    }`);
-    return raw ? mapSiteSettings(raw) : mockRepository.getSettings();
+    return fetchSingleton(
+      async () => {
+        const raw = await getSanityClient().fetch<RawSiteSettings | null>(`*[_type == "siteSettings"][0]{
+          siteName, tagline, description, logo, logoLight, favicon,
+          contact, social, navigation, footerNavigation, cta, seo
+        }`);
+        return raw ? mapSiteSettings(raw) : null;
+      },
+      () => mockRepository.getSettings()
+    );
   },
 
   async getHomepage() {
     if (!isSanityConfigured()) return mockRepository.getHomepage();
-    const raw = await getSanityClient().fetch<RawHomepage | null>(`*[_type == "homepage"][0]{
-      hero{eyebrow, headline, subheadline, ctaPrimary, ctaSecondary, backgroundImage, backgroundVideo, "stats": stats[]{${nestedIdFields}, value, label, suffix}},
-      "featuredServiceIds": featuredServices[]->_id,
-      "featuredPortfolioIds": featuredPortfolio[]->_id,
-      governmentExperience${showcaseProjection},
-      corporateExperience${showcaseProjection},
-      creativeShowcase${showcaseProjection},
-      aiShowcase${showcaseProjection},
-      filmShowcase${showcaseProjection},
-      "industryIds": industries[]->_id,
-      "statistics": statistics[]{${nestedIdFields}, value, label, suffix},
-      "awardIds": awards[]->_id,
-      "clientIds": clients[]->_id,
-      "testimonialIds": testimonials[]->_id,
-      "processSteps": processSteps[]{${nestedIdFields}, title, description},
-      "whyChooseUs": whyChooseUs[]{${nestedIdFields}, title, description},
-      "featuredBlogIds": featuredBlogs[]->_id,
-      "faqs": faqs[]{${nestedIdFields}, question, answer},
-      newsletter, seo
-    }`);
-    return raw ? mapHomepage(raw) : mockRepository.getHomepage();
+    return fetchSingleton(
+      async () => {
+        const raw = await getSanityClient().fetch<RawHomepage | null>(`*[_type == "homepage"][0]{
+          hero{eyebrow, headline, subheadline, ctaPrimary, ctaSecondary, backgroundImage, backgroundVideo, "stats": stats[]{${nestedIdFields}, value, label, suffix}},
+          "featuredServiceIds": featuredServices[]->_id,
+          "featuredPortfolioIds": featuredPortfolio[]->_id,
+          governmentExperience${showcaseProjection},
+          corporateExperience${showcaseProjection},
+          creativeShowcase${showcaseProjection},
+          aiShowcase${showcaseProjection},
+          filmShowcase${showcaseProjection},
+          "industryIds": industries[]->_id,
+          "statistics": statistics[]{${nestedIdFields}, value, label, suffix},
+          "awardIds": awards[]->_id,
+          "clientIds": clients[]->_id,
+          "testimonialIds": testimonials[]->_id,
+          "processSteps": processSteps[]{${nestedIdFields}, title, description},
+          "whyChooseUs": whyChooseUs[]{${nestedIdFields}, title, description},
+          "featuredBlogIds": featuredBlogs[]->_id,
+          "faqs": faqs[]{${nestedIdFields}, question, answer},
+          newsletter, seo
+        }`);
+        return raw ? mapHomepage(raw) : null;
+      },
+      () => mockRepository.getHomepage()
+    );
   },
 
   async getAbout() {
     if (!isSanityConfigured()) return mockRepository.getAbout();
-    const raw = await getSanityClient().fetch<RawAboutPage | null>(`*[_type == "aboutPage"][0]{
-      overview{title, content, image},
-      story{title, content},
-      mission, vision,
-      "values": values[]{${nestedIdFields}, title, description},
-      "timeline": timeline[]{${nestedIdFields}, year, title, description},
-      csr{title, content},
-      culture{title, content},
-      careers{title, content, ctaLabel, ctaHref},
-      seo
-    }`);
-    return raw ? mapAboutPage(raw) : mockRepository.getAbout();
+    return fetchSingleton(
+      async () => {
+        const raw = await getSanityClient().fetch<RawAboutPage | null>(`*[_type == "aboutPage"][0]{
+          overview{title, content, image},
+          story{title, content},
+          mission, vision,
+          "values": values[]{${nestedIdFields}, title, description},
+          "timeline": timeline[]{${nestedIdFields}, year, title, description},
+          csr{title, content},
+          culture{title, content},
+          careers{title, content, ctaLabel, ctaHref},
+          seo
+        }`);
+        return raw ? mapAboutPage(raw) : null;
+      },
+      () => mockRepository.getAbout()
+    );
   },
 
   async getServices() {
     if (!isSanityConfigured()) return mockRepository.getServices();
-    const raw = await getSanityClient().fetch<RawService[]>(serviceQuery());
-    return raw.length ? raw.map(mapService) : mockRepository.getServices();
+    return fetchList(
+      async () => (await getSanityClient().fetch<RawService[]>(serviceQuery())).map(mapService),
+      () => mockRepository.getServices()
+    );
   },
 
   async getServiceBySlug(slug: string) {
     if (!isSanityConfigured()) return mockRepository.getServiceBySlug(slug);
-    const raw = await getSanityClient().fetch<RawService | null>(serviceQuery("slug.current == $slug"), { slug });
-    return raw ? mapService(raw) : null;
+    return fetchOne(
+      async () => {
+        const raw = await getSanityClient().fetch<RawService | null>(serviceQuery("slug.current == $slug"), { slug });
+        return raw ? mapService(raw) : null;
+      },
+      () => mockRepository.getServiceBySlug(slug)
+    );
   },
 
   async getPortfolio() {
     if (!isSanityConfigured()) return mockRepository.getPortfolio();
-    const raw = await getSanityClient().fetch<RawPortfolioProject[]>(portfolioQuery());
-    return raw.length ? raw.map(mapPortfolioProject) : mockRepository.getPortfolio();
+    return fetchList(
+      async () => (await getSanityClient().fetch<RawPortfolioProject[]>(portfolioQuery())).map(mapPortfolioProject),
+      () => mockRepository.getPortfolio()
+    );
   },
 
   async getPortfolioBySlug(slug: string) {
     if (!isSanityConfigured()) return mockRepository.getPortfolioBySlug(slug);
-    const raw = await getSanityClient().fetch<RawPortfolioProject | null>(
-      portfolioQuery("slug.current == $slug"),
-      { slug }
+    return fetchOne(
+      async () => {
+        const raw = await getSanityClient().fetch<RawPortfolioProject | null>(
+          portfolioQuery("slug.current == $slug"),
+          { slug }
+        );
+        return raw ? mapPortfolioProject(raw) : null;
+      },
+      () => mockRepository.getPortfolioBySlug(slug)
     );
-    return raw ? mapPortfolioProject(raw) : null;
   },
 
   async getPortfolioByCategory(category: string) {
     if (!isSanityConfigured()) return mockRepository.getPortfolioByCategory(category);
-    const raw = await getSanityClient().fetch<RawPortfolioProject[]>(
-      portfolioQuery("category == $category"),
-      { category }
+    return fetchList(
+      async () =>
+        (
+          await getSanityClient().fetch<RawPortfolioProject[]>(portfolioQuery("category == $category"), { category })
+        ).map(mapPortfolioProject),
+      () => mockRepository.getPortfolioByCategory(category)
     );
-    return raw.map(mapPortfolioProject);
   },
 
   async getIndustries() {
     if (!isSanityConfigured()) return mockRepository.getIndustries();
-    const raw = await getSanityClient().fetch<RawIndustry[]>(`*[_type == "industry"]{
-      "id": _id, "slug": slug.current, title, shortDescription, description,
-      heroImage, expertise, relatedServiceSlugs, seo
-    }`);
-    return raw.length ? raw.map(mapIndustry) : mockRepository.getIndustries();
+    return fetchList(
+      async () =>
+        (
+          await getSanityClient().fetch<RawIndustry[]>(`*[_type == "industry"]{
+            "id": _id, "slug": slug.current, title, shortDescription, description,
+            heroImage, expertise, relatedServiceSlugs, seo
+          }`)
+        ).map(mapIndustry),
+      () => mockRepository.getIndustries()
+    );
   },
 
   async getIndustryBySlug(slug: string) {
     if (!isSanityConfigured()) return mockRepository.getIndustryBySlug(slug);
-    const raw = await getSanityClient().fetch<RawIndustry | null>(
-      `*[_type == "industry" && slug.current == $slug][0]{
-        "id": _id, "slug": slug.current, title, shortDescription, description,
-        heroImage, expertise, relatedServiceSlugs, seo
-      }`,
-      { slug }
+    return fetchOne(
+      async () => {
+        const raw = await getSanityClient().fetch<RawIndustry | null>(
+          `*[_type == "industry" && slug.current == $slug][0]{
+            "id": _id, "slug": slug.current, title, shortDescription, description,
+            heroImage, expertise, relatedServiceSlugs, seo
+          }`,
+          { slug }
+        );
+        return raw ? mapIndustry(raw) : null;
+      },
+      () => mockRepository.getIndustryBySlug(slug)
     );
-    return raw ? mapIndustry(raw) : null;
   },
 
   async getBlogs() {
     if (!isSanityConfigured()) return mockRepository.getBlogs();
-    const raw = await getSanityClient().fetch<RawBlogPost[]>(blogQuery());
-    return raw.length ? raw.map(mapBlogPost) : mockRepository.getBlogs();
+    return fetchList(
+      async () => (await getSanityClient().fetch<RawBlogPost[]>(blogQuery())).map(mapBlogPost),
+      () => mockRepository.getBlogs()
+    );
   },
 
   async getBlogBySlug(slug: string) {
     if (!isSanityConfigured()) return mockRepository.getBlogBySlug(slug);
-    const raw = await getSanityClient().fetch<RawBlogPost | null>(blogQuery("slug.current == $slug"), { slug });
-    return raw ? mapBlogPost(raw) : null;
+    return fetchOne(
+      async () => {
+        const raw = await getSanityClient().fetch<RawBlogPost | null>(blogQuery("slug.current == $slug"), { slug });
+        return raw ? mapBlogPost(raw) : null;
+      },
+      () => mockRepository.getBlogBySlug(slug)
+    );
   },
 
   async getTeam() {
     if (!isSanityConfigured()) return mockRepository.getTeam();
-    const raw = await getSanityClient().fetch<RawTeamMember[]>(`*[_type == "teamMember"]{
-      "id": _id, name, role, bio, image, department, linkedIn, featured
-    }`);
-    return raw.length ? raw.map(mapTeamMember) : mockRepository.getTeam();
+    return fetchList(
+      async () =>
+        (
+          await getSanityClient().fetch<RawTeamMember[]>(`*[_type == "teamMember"]{
+            "id": _id, name, role, bio, image, department, linkedIn, featured
+          }`)
+        ).map(mapTeamMember),
+      () => mockRepository.getTeam()
+    );
   },
 
   async getTestimonials() {
     if (!isSanityConfigured()) return mockRepository.getTestimonials();
-    const raw = await getSanityClient().fetch<RawTestimonial[]>(`*[_type == "testimonial"]{
-      "id": _id, quote, author, role, company, image, rating
-    }`);
-    return raw.length ? raw.map(mapTestimonial) : mockRepository.getTestimonials();
+    return fetchList(
+      async () =>
+        (
+          await getSanityClient().fetch<RawTestimonial[]>(`*[_type == "testimonial"]{
+            "id": _id, quote, author, role, company, image, rating
+          }`)
+        ).map(mapTestimonial),
+      () => mockRepository.getTestimonials()
+    );
   },
 
   async getClients() {
     if (!isSanityConfigured()) return mockRepository.getClients();
-    const raw = await getSanityClient().fetch<RawClient[]>(`*[_type == "client"]{
-      "id": _id, name, logo, industry, featured
-    }`);
-    return raw.length ? raw.map(mapClient) : mockRepository.getClients();
+    return fetchList(
+      async () =>
+        (
+          await getSanityClient().fetch<RawClient[]>(`*[_type == "client"]{
+            "id": _id, name, logo, industry, featured
+          }`)
+        ).map(mapClient),
+      () => mockRepository.getClients()
+    );
   },
 
   async getAwards() {
     if (!isSanityConfigured()) return mockRepository.getAwards();
-    const raw = await getSanityClient().fetch<RawAward[]>(`*[_type == "award"]{
-      "id": _id, title, organization, year, image
-    }`);
-    return raw.length ? raw.map(mapAward) : mockRepository.getAwards();
+    return fetchList(
+      async () =>
+        (
+          await getSanityClient().fetch<RawAward[]>(`*[_type == "award"]{
+            "id": _id, title, organization, year, image
+          }`)
+        ).map(mapAward),
+      () => mockRepository.getAwards()
+    );
   },
 
   async getResources() {
     if (!isSanityConfigured()) return mockRepository.getResources();
-    const raw = await getSanityClient().fetch<RawResource[]>(resourceQuery());
-    return raw.length ? raw.map(mapResource) : mockRepository.getResources();
+    return fetchList(
+      async () => (await getSanityClient().fetch<RawResource[]>(resourceQuery())).map(mapResource),
+      () => mockRepository.getResources()
+    );
   },
 
   async getResourceBySlug(slug: string) {
     if (!isSanityConfigured()) return mockRepository.getResourceBySlug(slug);
-    const raw = await getSanityClient().fetch<RawResource | null>(resourceQuery("slug.current == $slug"), { slug });
-    return raw ? mapResource(raw) : null;
+    return fetchOne(
+      async () => {
+        const raw = await getSanityClient().fetch<RawResource | null>(resourceQuery("slug.current == $slug"), { slug });
+        return raw ? mapResource(raw) : null;
+      },
+      () => mockRepository.getResourceBySlug(slug)
+    );
   },
 };
 

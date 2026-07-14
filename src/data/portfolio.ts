@@ -65,7 +65,7 @@ export const portfolioProjects: PortfolioProject[] = [
     title: "National Government Awareness Campaign",
     excerpt:
       "Multi-channel public awareness campaign reaching millions of citizens across Nepal with unified messaging.",
-    category: "government",
+    category: "advertisements",
     client: "Government Agency",
     industry: "Government",
     featured: true,
@@ -154,7 +154,7 @@ export const portfolioProjects: PortfolioProject[] = [
     title: "Educational Institution Profile Video",
     excerpt:
       "Premium institutional profile film showcasing academic excellence, campus life, and student achievements.",
-    category: "education",
+    category: "corporate-videos",
     client: "Leading Educational Institution",
     industry: "Education",
     featured: true,
@@ -414,7 +414,7 @@ export const portfolioProjects: PortfolioProject[] = [
     title: "NGO Social Impact Documentary",
     excerpt:
       "Emotional documentary showcasing NGO social impact programs and community transformation stories.",
-    category: "ngos",
+    category: "documentaries",
     client: "International NGO",
     industry: "NGOs",
     featured: false,
@@ -498,10 +498,6 @@ function defaultProcess() {
 }
 
 export const portfolioCategories = [
-  { slug: "government", label: "Government" },
-  { slug: "corporate", label: "Corporate" },
-  { slug: "education", label: "Education" },
-  { slug: "ngos", label: "NGOs" },
   { slug: "documentaries", label: "Documentaries" },
   { slug: "television-commercials", label: "Television Commercials" },
   { slug: "advertisements", label: "Advertisements" },
