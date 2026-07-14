@@ -502,11 +502,11 @@ export const aboutPage: AboutPage = {
     { id: "4", title: "Impact", description: "We measure success by the tangible results we deliver for our clients and communities." },
   ],
   timeline: [
-    { id: "1", year: "2010", title: "Foundation", description: "Public Relation Nepal founded in Kathmandu as a boutique PR agency." },
-    { id: "2", year: "2014", title: "Film Production", description: "Launched film production division with first municipality documentary." },
-    { id: "3", year: "2017", title: "Digital Expansion", description: "Added digital marketing, web development, and SEO services." },
-    { id: "4", year: "2020", title: "Enterprise Growth", description: "Expanded to serve multinational and government enterprise clients." },
-    { id: "5", year: "2023", title: "AI Innovation", description: "Pioneered AI advertising and video production capabilities in South Asia." },
+    { id: "1", year: "2024", title: "Foundation", description: "Public Relation Nepal founded in Kathmandu as a boutique PR agency." },
+    { id: "2", year: "2025", title: "Film Production", description: "Launched film production division with first municipality documentary." },
+    { id: "3", year: "2025", title: "Digital Expansion", description: "Added digital marketing, web development, and SEO services." },
+    { id: "4", year: "2025", title: "Enterprise Growth", description: "Expanded to serve multinational and government enterprise clients." },
+    { id: "5", year: "2025", title: "AI Innovation", description: "Pioneered AI advertising and video production capabilities in South Asia." },
     { id: "6", year: "2025", title: "Regional Leadership", description: "Recognized as South Asia's premier integrated communications agency." },
   ],
   csr: {
