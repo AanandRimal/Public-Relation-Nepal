@@ -114,21 +114,33 @@ const mapTestimonial = (raw: RawTestimonial): Testimonial => ({
   image: toImageAsset(raw.image),
 });
 
+/** GROQ projects an unset array field as null, not [] — this normalizes it back for any array field a page maps over directly. */
+const arr = <T,>(value: T[] | null | undefined): T[] => value ?? [];
+
 const mapService = (raw: RawService): Service => ({
   ...raw,
   heroImage: toImageAsset(raw.heroImage),
+  benefits: arr(raw.benefits),
+  process: arr(raw.process),
+  faqs: arr(raw.faqs),
+  relatedServiceSlugs: raw.relatedServiceSlugs ?? undefined,
 });
 
 const mapPortfolioProject = (raw: RawPortfolioProject): PortfolioProject => ({
   ...raw,
   heroImage: toImageAsset(raw.heroImage) ?? { url: "", alt: raw.title },
   gallery: (raw.gallery ?? []).map((img) => toImageAsset(img)).filter((img) => !!img),
+  creativeProcess: arr(raw.creativeProcess),
+  deliverables: arr(raw.deliverables),
+  results: arr(raw.results),
+  relatedProjectSlugs: raw.relatedProjectSlugs ?? undefined,
   testimonial: raw.testimonial ? mapTestimonial(raw.testimonial) : undefined,
 });
 
 const mapBlogPost = (raw: RawBlogPost): BlogPost => ({
   ...raw,
   coverImage: toImageAsset(raw.coverImage),
+  tags: arr(raw.tags),
   author: { ...raw.author, id: "author", image: toImageAsset(raw.author.image) },
 });
 
@@ -140,6 +152,8 @@ const mapTeamMember = (raw: RawTeamMember): TeamMember => ({
 const mapIndustry = (raw: RawIndustry): Industry => ({
   ...raw,
   heroImage: toImageAsset(raw.heroImage),
+  expertise: arr(raw.expertise),
+  relatedServiceSlugs: raw.relatedServiceSlugs ?? undefined,
 });
 
 const mapClient = (raw: RawClient): Client => ({
