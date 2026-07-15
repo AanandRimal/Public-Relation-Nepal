@@ -130,7 +130,8 @@ function NavItem({
   activeDropdown: string | null;
   setActiveDropdown: (v: string | null) => void;
 }) {
-  const hasChildren = item.children && item.children.length > 0;
+  const validChildren = item.children?.filter((c) => c.href && c.label) ?? [];
+  const hasChildren = validChildren.length > 0;
 
   if (!hasChildren) {
     return (
@@ -168,7 +169,7 @@ function NavItem({
       {activeDropdown === item.label && (
         <div className="absolute top-full left-0 pt-2 min-w-[220px]">
           <div className="bg-white rounded-lg shadow-xl border border-slate-100 py-2 overflow-hidden">
-            {item.children!.map((child) => (
+            {validChildren.map((child) => (
               <Link
                 key={child.href}
                 href={child.href}
@@ -186,7 +187,8 @@ function NavItem({
 
 function MobileNavItem({ item, onClose }: { item: NavigationItem; onClose: () => void }) {
   const [expanded, setExpanded] = useState(false);
-  const hasChildren = item.children && item.children.length > 0;
+  const validChildren = item.children?.filter((c) => c.href && c.label) ?? [];
+  const hasChildren = validChildren.length > 0;
 
   if (!hasChildren) {
     return (
@@ -211,7 +213,7 @@ function MobileNavItem({ item, onClose }: { item: NavigationItem; onClose: () =>
       </button>
       {expanded && (
         <div className="pl-4 space-y-1">
-          {item.children!.map((child) => (
+          {validChildren.map((child) => (
             <Link
               key={child.href}
               href={child.href}
