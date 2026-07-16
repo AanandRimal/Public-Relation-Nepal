@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X, ChevronDown, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { CmsImage } from "@/components/shared/cms-image";
 import type { NavigationItem, SiteSettings } from "@/domain/types";
 
 interface HeaderProps {
@@ -27,6 +28,8 @@ export function Header({ settings }: HeaderProps) {
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
+  const logoImage = isScrolled ? settings.logo ?? settings.logoLight : settings.logoLight ?? settings.logo;
+
   return (
     <header
       className={cn(
@@ -39,9 +42,13 @@ export function Header({ settings }: HeaderProps) {
       <div className="container-wide">
         <div className="flex h-18 md:h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-white font-display font-bold text-sm">
-              PR
-            </div>
+            {logoImage ? (
+              <CmsImage image={logoImage} className="h-10 w-auto object-contain" priority />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-white font-display font-bold text-sm">
+                PR
+              </div>
+            )}
             <div className="hidden sm:block">
               <span className={cn(
                 "font-display font-bold text-lg tracking-tight transition-colors",

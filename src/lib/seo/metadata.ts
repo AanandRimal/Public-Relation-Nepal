@@ -40,7 +40,7 @@ export function organizationSchema(settings: SiteSettings) {
     name: settings.siteName,
     description: settings.description,
     url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
+    ...(settings.logo ? { logo: settings.logo.url } : {}),
     contactPoint: {
       "@type": "ContactPoint",
       telephone: settings.contact.phone,

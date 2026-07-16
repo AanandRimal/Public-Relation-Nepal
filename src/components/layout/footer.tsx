@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
+import { CmsImage } from "@/components/shared/cms-image";
 import type { SiteSettings } from "@/domain/types";
 
 interface FooterProps {
@@ -8,6 +9,7 @@ interface FooterProps {
 
 export function Footer({ settings }: FooterProps) {
   const currentYear = new Date().getFullYear();
+  const logoImage = settings.logoLight ?? settings.logo;
 
   return (
     <footer className="bg-charcoal text-white">
@@ -15,9 +17,13 @@ export function Footer({ settings }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-white font-display font-bold text-sm">
-                PR
-              </div>
+              {logoImage ? (
+                <CmsImage image={logoImage} className="h-10 w-auto object-contain" />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-white font-display font-bold text-sm">
+                  PR
+                </div>
+              )}
               <div>
                 <span className="font-display font-bold text-lg">Public Relation </span>
                 <span className="font-display font-bold text-lg text-green-400">Nepal</span>
