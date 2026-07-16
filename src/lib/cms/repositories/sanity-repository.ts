@@ -42,10 +42,12 @@ function withDefaults<T>(mock: T, value: T): T {
   if (typeof mock !== "object" || mock === null) {
     return value;
   }
-  const result: Record<string, unknown> = { ...(mock as Record<string, unknown>) };
-  for (const key of Object.keys(mock as Record<string, unknown>)) {
-    const mockValue = (mock as Record<string, unknown>)[key];
-    const rawValue = (value as Record<string, unknown>)[key];
+  const mockObj = mock as Record<string, unknown>;
+  const valueObj = value as Record<string, unknown>;
+  const result: Record<string, unknown> = { ...mockObj, ...valueObj };
+  for (const key of new Set([...Object.keys(mockObj), ...Object.keys(valueObj)])) {
+    const mockValue = mockObj[key];
+    const rawValue = valueObj[key];
     result[key] = rawValue === undefined || rawValue === null ? mockValue : withDefaults(mockValue, rawValue);
   }
   return result as T;
@@ -83,7 +85,7 @@ async function fetchOne<T>(fetchAndMap: () => Promise<T | null>, mock: () => Pro
 }
 
 type RawTestimonial = Omit<Testimonial, "image"> & { image?: SanityImage };
-type RawService = Omit<Service, "heroImage"> & { heroImage?: SanityImage };
+type RawService = Omit<Service, "heroImage" | "gallery"> & { heroImage?: SanityImage; gallery?: SanityImage[] };
 type RawPortfolioProject = Omit<PortfolioProject, "heroImage" | "gallery" | "testimonial"> & {
   heroImage?: SanityImage;
   gallery?: SanityImage[];
@@ -120,6 +122,7 @@ const arr = <T,>(value: T[] | null | undefined): T[] => value ?? [];
 const mapService = (raw: RawService): Service => ({
   ...raw,
   heroImage: toImageAsset(raw.heroImage),
+  gallery: arr(raw.gallery).map((img) => toImageAsset(img)).filter((img) => !!img),
   benefits: arr(raw.benefits),
   process: arr(raw.process),
   faqs: arr(raw.faqs),
@@ -212,6 +215,7 @@ export const sanityRepository: ContentRepository = {
         const raw = await getSanityClient().fetch<RawHomepage | null>(`*[_type == "homepage"][0]{
           hero{eyebrow, headline, subheadline, ctaPrimary, ctaSecondary, backgroundImage, backgroundVideo, "stats": stats[]{${nestedIdFields}, value, label, suffix}},
           "featuredServiceIds": featuredServices[]->_id,
+          serviceSpotlight{eyebrow, title, description, ctaLabel, "serviceId": service->_id},
           "featuredPortfolioIds": featuredPortfolio[]->_id,
           governmentExperience${showcaseProjection},
           corporateExperience${showcaseProjection},
@@ -435,7 +439,7 @@ function serviceQuery(filter?: string) {
   const suffix = filter ? "[0]" : "";
   return `*[_type == "service"${match}]${suffix}{
     "id": _id, "slug": slug.current, title, shortDescription, description, icon, featured,
-    heroImage,
+    heroImage, gallery,
     "benefits": benefits[]{${nestedIdFields}, title, description},
     "process": process[]{${nestedIdFields}, title, description},
     "faqs": faqs[]{${nestedIdFields}, question, answer},

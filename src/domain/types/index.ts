@@ -108,6 +108,7 @@ export interface Service {
   icon?: string;
   featured?: boolean;
   heroImage?: ImageAsset;
+  gallery?: ImageAsset[];
   benefits: { id: string; title: string; description: string }[];
   process: ProcessStep[];
   faqs: FAQ[];
@@ -249,6 +250,13 @@ export interface HeroSection {
 export interface Homepage {
   hero: HeroSection;
   featuredServiceIds: string[];
+  serviceSpotlight?: {
+    eyebrow?: string;
+    title: string;
+    description?: string;
+    ctaLabel?: string;
+    serviceId?: string;
+  };
   featuredPortfolioIds: string[];
   governmentExperience: {
     title: string;

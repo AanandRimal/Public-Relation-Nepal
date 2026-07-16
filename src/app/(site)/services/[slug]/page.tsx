@@ -113,6 +113,25 @@ export default async function ServiceDetailPage({
         </div>
       </section>
 
+      {service.gallery && service.gallery.length > 0 && (
+        <section className="section-padding bg-white">
+          <div className="container-wide">
+            <FadeIn>
+              <SectionHeader eyebrow="Gallery" title="A Closer Look" align="center" />
+            </FadeIn>
+            <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {service.gallery.map((img, i) => (
+                <StaggerItem key={i} className={i === 0 ? "md:col-span-2 md:row-span-2" : ""}>
+                  <div className="relative aspect-[16/10] rounded-xl overflow-hidden">
+                    <CmsImage image={img} fill sizes="(max-width: 768px) 100vw, 33vw" />
+                  </div>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </div>
+        </section>
+      )}
+
       <section className="section-padding bg-slate-50">
         <div className="container-wide">
           <FadeIn>

@@ -118,6 +118,7 @@ export const service = {
     { name: "icon", title: "Icon (lucide name)", type: "string" },
     { name: "featured", title: "Featured", type: "boolean" },
     imageField("heroImage", "Hero Image"),
+    { name: "gallery", title: "Gallery", type: "array", of: [imageField()] },
     {
       name: "benefits",
       title: "Benefits",
@@ -383,6 +384,19 @@ export const homepage = {
       ],
     },
     { name: "featuredServices", title: "Featured Services", type: "array", of: [{ type: "reference", to: [{ type: "service" }] }] },
+    {
+      name: "serviceSpotlight",
+      title: "Service Spotlight",
+      description: "A single-service highlight banner on the homepage (e.g. \"PR Studio\"). Leave the service field empty to hide this section entirely.",
+      type: "object",
+      fields: [
+        { name: "eyebrow", title: "Eyebrow", type: "string", initialValue: "Behind The Scenes" },
+        { name: "title", title: "Title", type: "string" },
+        { name: "description", title: "Description", type: "text", description: "Leave blank to reuse the service's own short description." },
+        { name: "ctaLabel", title: "Button Label", type: "string", initialValue: "Explore Our Studio" },
+        { name: "service", title: "Service", type: "reference", to: [{ type: "service" }] },
+      ],
+    },
     { name: "featuredPortfolio", title: "Featured Portfolio", type: "array", of: [{ type: "reference", to: [{ type: "portfolioProject" }] }] },
     { name: "governmentExperience", title: "Government Experience", type: "object", fields: showcaseFields },
     { name: "corporateExperience", title: "Corporate Experience", type: "object", fields: showcaseFields },

@@ -12,6 +12,7 @@ import {
 import { buildMetadata, faqSchema, jsonLd } from "@/lib/seo/metadata";
 import { Hero } from "@/components/sections/hero";
 import { ServicesGrid } from "@/components/sections/services-grid";
+import { StudioSpotlight } from "@/components/sections/studio-spotlight";
 import { PortfolioGrid } from "@/components/sections/portfolio-grid";
 import {
   StatsSection,
@@ -74,6 +75,7 @@ export default async function HomePage() {
   const clients = allClients.filter((c) => homepage.clientIds.includes(c.id));
   const awards = allAwards.filter((a) => homepage.awardIds.includes(a.id));
   const blogs = allBlogs.filter((b) => homepage.featuredBlogIds.includes(b.id));
+  const spotlightService = allServices.find((s) => s.id === homepage.serviceSpotlight?.serviceId);
 
   return (
     <>
@@ -85,6 +87,16 @@ export default async function HomePage() {
       <Hero data={homepage.hero} />
 
       <ServicesGrid services={featuredServices} />
+
+      {spotlightService && homepage.serviceSpotlight && (
+        <StudioSpotlight
+          service={spotlightService}
+          eyebrow={homepage.serviceSpotlight.eyebrow}
+          title={homepage.serviceSpotlight.title}
+          description={homepage.serviceSpotlight.description}
+          ctaLabel={homepage.serviceSpotlight.ctaLabel}
+        />
+      )}
 
       <PortfolioGrid projects={featuredPortfolio} />
 
