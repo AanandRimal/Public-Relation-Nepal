@@ -74,17 +74,18 @@ export const siteSettings: SiteSettings = {
     secondaryHref: "/portfolio",
   },
   seo: {
-    title: "Public Relation Nepal | Premier PR & Creative Agency in South Asia",
+    title: "Best PR Agency in Nepal | Branding & Digital Marketing — Public Relation Nepal",
     description:
-      "Award-winning public relations, branding, film production, AI advertising, and digital transformation agency serving government, enterprise, and international organizations across South Asia.",
+      "Public Relation Nepal is Nepal's top PR agency for branding, public relations, and digital marketing — trusted by government, enterprise, and international organizations across South Asia.",
     keywords: [
+      "best PR agency in Nepal",
+      "top PR agency in Nepal",
       "PR agency Nepal",
-      "public relations South Asia",
-      "branding agency Kathmandu",
-      "government communications",
-      "film production Nepal",
-      "AI advertising",
-      "digital marketing agency",
+      "branding agency Nepal",
+      "branding and marketing company in Nepal",
+      "best digital marketing agency in Nepal",
+      "digital marketing company Nepal",
+      "public relations Kathmandu",
     ],
   },
 };

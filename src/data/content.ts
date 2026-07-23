@@ -479,8 +479,15 @@ export const homepage: Homepage = {
     description: "Insights on PR, branding, film production, and digital innovation delivered to your inbox.",
   },
   seo: {
-    title: "Public Relation Nepal | Premier PR & Creative Agency in South Asia",
-    description: "Award-winning public relations, branding, film production, AI advertising, and digital transformation agency.",
+    title: "Best PR Agency in Nepal | Public Relation Nepal — Branding & Digital Marketing",
+    description: "Nepal's top PR agency for public relations, branding, and digital marketing — award-winning work for government, enterprise, and international clients.",
+    keywords: [
+      "best PR agency in Nepal",
+      "top PR agency in Nepal",
+      "branding agency Nepal",
+      "branding and marketing company in Nepal",
+      "best digital marketing agency in Nepal",
+    ],
   },
 };
 

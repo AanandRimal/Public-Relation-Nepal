@@ -1,4 +1,4 @@
-import type { Service } from "@/domain/types";
+import type { Service, SEO } from "@/domain/types";
 
 const defaultProcess = [
   {
@@ -33,7 +33,8 @@ function createService(
   title: string,
   shortDescription: string,
   description: string,
-  featured = false
+  featured = false,
+  seoOverride?: Partial<SEO>
 ): Service {
   return {
     id: slug,
@@ -75,6 +76,7 @@ function createService(
     seo: {
       title: `${title} | Public Relation Nepal`,
       description: shortDescription,
+      ...seoOverride,
     },
   };
 }
@@ -85,33 +87,56 @@ export const services: Service[] = [
     "Public Relations",
     "Strategic PR campaigns that build reputation, manage crises, and amplify your narrative across media and stakeholders.",
     "Public Relation Nepal delivers comprehensive public relations services for government bodies, multinational corporations, NGOs, and international organizations. From media relations and press conferences to crisis communication and stakeholder engagement, we protect and elevate your reputation with precision and authority.",
-    true
+    true,
+    {
+      title: "Best PR Agency in Nepal | Public Relations Services — Public Relation Nepal",
+      description: "Nepal's top PR agency for media relations, crisis communication, and stakeholder engagement — trusted by government, enterprise, and international clients.",
+      keywords: ["best PR agency in Nepal", "top PR agency in Nepal", "PR agency Nepal", "public relations services Nepal", "PR agency Kathmandu"],
+    }
   ),
   createService(
     "corporate-branding",
     "Corporate Branding",
     "Transform your identity with premium brand systems that communicate trust, authority, and innovation.",
     "We architect complete brand ecosystems — from visual identity and brand guidelines to brand architecture and repositioning strategies. Our branding work has helped municipalities, enterprises, and institutions establish commanding market presence.",
-    true
+    true,
+    {
+      title: "Branding Agency in Nepal | Corporate Branding & Identity — Public Relation Nepal",
+      description: "Nepal's leading branding and marketing company — brand identity, brand strategy, and repositioning for enterprises and institutions.",
+      keywords: ["branding agency Nepal", "branding company Nepal", "branding and marketing company in Nepal", "corporate branding Nepal", "brand identity Kathmandu"],
+    }
   ),
   createService(
     "brand-strategy",
     "Brand Strategy",
     "Insight-driven brand strategies that align business objectives with audience expectations.",
-    "Our brand strategists conduct deep market research, competitive analysis, and audience mapping to develop positioning strategies that drive long-term growth and market leadership."
+    "Our brand strategists conduct deep market research, competitive analysis, and audience mapping to develop positioning strategies that drive long-term growth and market leadership.",
+    false,
+    {
+      keywords: ["brand strategy agency Nepal", "branding and marketing company in Nepal", "brand positioning Nepal"],
+    }
   ),
   createService(
     "digital-marketing",
     "Digital Marketing",
     "Data-driven digital campaigns that generate leads, build awareness, and deliver measurable ROI.",
     "From performance marketing and programmatic advertising to email campaigns and analytics, we execute full-funnel digital strategies for enterprise and government clients.",
-    true
+    true,
+    {
+      title: "Best Digital Marketing Agency in Nepal | Public Relation Nepal",
+      description: "Nepal's best digital marketing agency — performance marketing, SEO, social media, and full-funnel digital strategy for enterprise and government clients.",
+      keywords: ["best digital marketing agency in Nepal", "digital marketing company Nepal", "digital marketing Kathmandu", "digital marketing agency Nepal"],
+    }
   ),
   createService(
     "seo",
     "Search Engine Optimization",
     "Enterprise SEO strategies that dominate search rankings and drive qualified organic traffic.",
-    "Technical SEO audits, content optimization, link building, and local SEO — engineered for sustainable search visibility and lead generation."
+    "Technical SEO audits, content optimization, link building, and local SEO — engineered for sustainable search visibility and lead generation.",
+    false,
+    {
+      keywords: ["SEO agency Nepal", "SEO company Nepal", "SEO services Kathmandu"],
+    }
   ),
   createService(
     "social-media-marketing",
